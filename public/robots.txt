@@ -1,0 +1,25 @@
+# robots.txt for https://band.19216891.xyz/
+
+User-agent: *
+Allow: /
+
+# 禁止爬取特定私有目录（如果有后台或测试目录，写在这里）
+# Disallow: /private/
+# Disallow: /tmp/
+
+# 针对特定搜索引擎的优化（可选，一般默认允许即可）
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# 屏蔽常见的垃圾爬虫/AI数据抓取（可选，根据个人喜好）
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# 网站地图位置（非常重要，稍后建议生成一个 sitemap.xml）
+Sitemap: https://band.19216891.xyz/sitemap.xml

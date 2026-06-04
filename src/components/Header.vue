@@ -1,0 +1,170 @@
+<script setup>
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { userStore } from '../store/user';
+import { apiLogout } from '../utils/api'; 
+
+const props = defineProps({
+  activeSection: String
+});
+
+const emit = defineEmits(['nav-click']);
+const router = useRouter();
+const route = useRoute();
+
+const clickedSection = ref(null);
+const scrollTimeoutId = ref(null);
+const isScrolling = ref(false);
+
+const clearClickedSection = () => {
+  clickedSection.value = null;
+  if (scrollTimeoutId.value) {
+    clearTimeout(scrollTimeoutId.value);
+    scrollTimeoutId.value = null;
+  }
+  isScrolling.value = false;
+};
+
+watch(() => props.activeSection, (newSectionId, oldSectionId) => {
+  if (!isScrolling.value) {
+    clickedSection.value = null;
+  }
+}, { flush: 'post' });
+
+const handleUserScroll = () => {
+  if (scrollTimeoutId.value && !isScrolling.value) {
+    clearClickedSection();
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleUserScroll, { passive: true });
+  window.addEventListener('touchstart', () => {
+    clearClickedSection(); 
+  }, { passive: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleUserScroll);
+  clearClickedSection();
+});
+
+const nav = [
+  {title: '主页', to: '#section1', color: '#fff'},
+  {title: '角色', to: '#section2', color: '#ff90b9'},
+  {title: '音乐', to: '#section3', color: '#fff475'},
+  {title: '相册', to: '#section4', color: '#75bfff'},
+  {title: '关于', to: '#section5', color: '#ff5252'},
+];
+
+const bg_color = ref('rgba(0, 0, 0, 0.35)');
+
+watch(() => props.activeSection, (newSection) => {
+  bg_color.value = newSection !== 'section1'
+    ? 'rgba(0, 0, 0, 0.5)'
+    : 'rgba(0, 0, 0, 0.35)';
+}, { immediate: true });
+
+const handleClick = (e, item) => {
+  e.preventDefault();
+  emit('nav-click', item.to);
+  
+  if (scrollTimeoutId.value) {
+    clearTimeout(scrollTimeoutId.value);
+  }
+  isScrolling.value = true;
+  clickedSection.value = item.to;
+  
+  scrollTimeoutId.value = setTimeout(() => {
+    isScrolling.value = false;
+    const targetSection = item.to.replace('#', '');
+    if (props.activeSection !== targetSection) {
+      clickedSection.value = null;
+    }
+    scrollTimeoutId.value = null;
+  }, 1500);
+};
+
+const goToLogin = () => {
+  const currentPath = route.path;
+  const currentSection = props.activeSection ? `#${props.activeSection}` : '';
+  const returnUrl = currentPath + currentSection;
+  
+  router.push({
+    path: '/login',
+    query: { redirect: returnUrl }
+  });
+};
+
+const handleLogout = async () => {
+  try {
+    await apiLogout(); 
+  } catch (e) {
+    console.error("Logout failed:", e);
+  } finally {
+    router.push('/'); 
+  }
+};
+</script>
+
+<template>
+  <div class="header" :style="{'--bg-color': bg_color}" >
+    <img class="logo" src="/assets/images/logo_movie_cn.png"/>
+    <div class="nav">
+      <ul>
+        <li 
+          v-for="i in nav" 
+          :key="i.title" 
+          :class="{ active: clickedSection ? i.to === clickedSection : i.to === `#${activeSection}` }"
+          :style="{'--active-color': i.color}"
+        >
+          <a 
+            :href="i.to" 
+            @click.prevent="(e) => handleClick(e, i)"
+          >
+            {{ i.title }}
+            <span class="underline"></span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    
+    <div class="user-area">
+      <button v-if="!userStore.isLoggedIn" class="login-btn" @click="goToLogin">登录</button>
+      
+      <div v-else class="user-info">
+        <span>欢迎, {{ userStore.user.username }}</span>
+        <button class="login-btn logout" @click="handleLogout">退出</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.header { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, var(--bg-color), transparent); height: 72px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; z-index: 1000; transition: background-color 0.5s ease, background 0.5s ease; will-change: background; }
+.logo { height: 40px; transition: transform 0.3s ease; }
+.logo:hover { transform: scale(1.05); }
+.nav { position: absolute; left: 50%; transform: translateX(-50%); }
+.nav ul { display: flex; margin: 0; padding: 0; height: 100%; gap: 32px; justify-self: center; }
+.nav li { list-style: none; position: relative; cursor: pointer; }
+.nav li a { text-decoration: none; color: rgba(255, 255, 255, 0.9); font-size: 16px; font-weight: 500; letter-spacing: 0.5px; padding: 8px 0; position: relative; transition: all 0.3s ease; display: inline-block; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); }
+.nav li .underline { position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, #ff8a00, #ff5252); transition: width 0.3s ease; }
+.nav li.active .underline { width: 100%; }
+@media (hover: hover) {
+  .nav li a:hover { color: var(--active-color); transform: translateY(-2px); }
+  .nav li:hover .underline { width: 100%; }
+}
+.nav li.active a { color: var(--active-color); font-weight: 600; transform: translateY(-2px); }
+.nav li.active .underline { background: linear-gradient(90deg, #ff8a00, #ff5252); box-shadow: 0 0 10px rgba(255, 255, 255, 0.7); }
+.user-area { color: white; }
+.user-info { display: flex; align-items: center; gap: 15px; }
+.user-info span { font-weight: 500; color: rgba(255, 255, 255, 0.9); }
+.login-btn { background: transparent; color: white; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 4px; padding: 8px 16px; font-size: 14px; cursor: pointer; transition: all 0.3s ease; }
+.login-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: white; transform: translateY(-2px); }
+.login-btn.logout { border-color: #ff8a8a; color: #ff8a8a; }
+.login-btn.logout:hover { background-color: #ff5252; border-color: #ff5252; color: white; }
+.section-active { animation: fadeIn 0.6s ease-out; }
+@keyframes fadeIn { from { opacity: 0.6; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (min-width: 769px) and (max-width: 1024px) { .header { padding: 0 25px; } .nav ul { gap: 20px; } .nav li a { font-size: 15px; } }
+@media (max-width: 768px) { .header { padding: 0 15px; height: 60px; } .logo { height: 30px; } .nav { display: none; } .login-btn { padding: 6px 12px; font-size: 13px; } }
+</style>

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Bocchi the Rock! 孤独摇滚 | 粉丝音乐站</title>
+  <meta name="description" content="专为《孤独摇滚！》粉丝打造的同人音乐站。在线畅听结束乐队全曲目，体验沉浸式播放器，发现更多关于Bocchi the Rock!的精彩内容。">
+  <meta name="keywords" content="孤独摇滚, Bocchi the Rock, 结束乐队, Kessoku Band, 后藤一里, 伊地知虹夏, 山田凉, 喜多郁代, 在线听歌, 同人音乐站, 粉丝网站">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://band.19216891.xyz/">
+
+  <!-- === [新增] 关键资源预加载 === -->
+  <!-- 在浏览器解析 JS 前先并行下载首屏 Logo 和视频封面 -->
+  <link rel="preload" as="image" href="/assets/images/logo_movie_cn.png" fetchpriority="high">
+  <link rel="preload" as="image" href="/assets/videos/video_poster.webp" fetchpriority="high">
+
+  <link rel="icon" type="image/jpeg" href="/favicon.jpg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.jpg">
+
+  <!-- 保持你原有的 Prerender 规则 -->
+  <script type="speculationrules">
+    {
+      "prerender": [
+        {
+          "source": "document",
+          "where": {
+            "and": [
+              { "href_matches": "/*" },
+              { "not": { "href_matches": "/logout" } }
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ]
+    }
+  </script>
+
+  <meta name="application-name" content="孤独摇滚粉丝站">
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- SEO / Social Media Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="孤独摇滚粉丝音乐站">
+  <meta property="og:title" content="Bocchi the Rock! 粉丝音乐站">
+  <meta property="og:description" content="在线畅听结束乐队全曲目，专为《孤独摇滚！》粉丝打造的沉浸式音乐播放器。">
+  <meta property="og:url" content="https://band.19216891.xyz/">
+  <meta property="og:image" content="/apple-touch-icon.jpg">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Bocchi the Rock! 粉丝音乐站">
+  <meta name="twitter:description" content="在线畅听结束乐队全曲目，专为《孤独摇滚！》粉丝打造的沉浸式音乐播放器。">
+  <meta name="twitter:image" content="/apple-touch-icon.jpg">
+
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: #141414;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

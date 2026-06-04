@@ -1,0 +1,26 @@
+{
+  "name": "孤独摇滚同人站",
+  "short_name": "Bocchi",
+  "description": "Bocchi The Rock Fan Site",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#141414",
+  "theme_color": "#ec407a",
+  "icons": [
+    {
+      "src": "/favicon.jpg?v=4",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/apple-touch-icon.jpg?v=4",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/apple-touch-icon.jpg?v=4",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
