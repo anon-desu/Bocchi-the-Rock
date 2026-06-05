@@ -87,9 +87,7 @@ const submitForm = async () => {
     }
 
     if (isRegister.value) {
-        if (FormModel.value.password.length < 3) {
-            alert('为了您的账号安全，密码长度不能少于 3 位！'); return;
-        }
+        // 已移除：密码长度少于 8 位的限制校验
         if (FormModel.value.password !== FormModel.value.RePassword) {
             alert('两次输入的密码不一致！'); return;
         }
@@ -284,13 +282,13 @@ const closeCaptcha = () => {
                     <input v-model="FormModel.username" required maxlength="20"></input>
                     
                     <label class="input-name">Password:</label>
-                    <input type="password" v-model="FormModel.password" required :minlength="isRegister ? 8 : 0" :placeholder="isRegister ? '至少8位' : ''"></input>
+                    <input type="password" v-model="FormModel.password" required></input>
                     
                     <div class="repassword-container">
                         <Transition name="form-fade" mode="out-in">
                             <div v-if="isRegister" class="repassword-content">
                                 <label class="input-name">RePassword:</label>
-                                <input type="password" v-model="FormModel.RePassword" required minlength="8" placeholder="至少8位"></input>
+                                <input type="password" v-model="FormModel.RePassword" required></input>
                             </div>
                         </Transition>
                     </div>
