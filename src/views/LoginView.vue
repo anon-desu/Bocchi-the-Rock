@@ -87,8 +87,8 @@ const submitForm = async () => {
     }
 
     if (isRegister.value) {
-        if (FormModel.value.password.length < 8) {
-            alert('为了您的账号安全，密码长度不能少于 8 位！'); return;
+        if (FormModel.value.password.length < 3) {
+            alert('为了您的账号安全，密码长度不能少于 3 位！'); return;
         }
         if (FormModel.value.password !== FormModel.value.RePassword) {
             alert('两次输入的密码不一致！'); return;
