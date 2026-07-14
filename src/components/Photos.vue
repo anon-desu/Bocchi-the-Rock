@@ -11,7 +11,7 @@ const photo_list = [
   "/assets/images/p_22.gif", "/assets/images/p_23.jpeg"
 ];
 
-// 直接生成一份长列表，减少运行时的计算开nw
+// 直接生成一份长列表，减少运行时的计算开销
 // 复制 4 份确保宽屏幕下滚动也不会断档
 const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list];
 </script>
@@ -170,13 +170,31 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     .scroll-container { height: 200px; }
     .boxes { gap: 15px; }
     .box { width: 150px; height: 150px; }
-    .box:hover { width: 220px; transform: scale(1.1); }
+    
+    /* 
+       【关键修复】：同时作用于正向行和反向行的 hover 状态。
+       重写宽度以覆盖桌面端的 .boxes-backward .box:hover 样式。
+    */
+    .box:hover,
+    .boxes-backward .box:hover { 
+        width: 220px; 
+        transform: scale(1.1) rotateY(0deg); 
+    }
 }
 
 @media (max-width: 768px) {
     .scroll-container { height: 150px; }
     .boxes { gap: 10px; }
     .box { width: 120px; height: 120px; }
-    .box:hover { width: 200px; transform: scale(1.05); }
+    
+    /* 
+       【关键修复】：同时作用于正向行和反向行的 hover 状态。
+       重写宽度以覆盖桌面端的 .boxes-backward .box:hover 样式。
+    */
+    .box:hover,
+    .boxes-backward .box:hover { 
+        width: 200px; 
+        transform: scale(1.05) rotateY(0deg); 
+    }
 }
 </style>
