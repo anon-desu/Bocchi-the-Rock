@@ -1,5 +1,5 @@
 <script setup>
-// 不需要 computed，直接处理静态数据即可
+// 1. 原始静态图片列表 (共23张)
 const photo_list = [
   "/assets/images/p_1.jpeg", "/assets/images/p_2.jpeg", "/assets/images/p_3.jpeg", 
   "/assets/images/p_4.gif",  "/assets/images/p_5.jpeg", "/assets/images/p_6.jpeg", 
@@ -11,42 +11,62 @@ const photo_list = [
   "/assets/images/p_22.gif", "/assets/images/p_23.jpeg"
 ];
 
-// 直接生成一份长列表，减少运行时的计算开销
-// 复制 4 份确保宽屏幕下滚动也不会断档
-const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list];
+// 2. 简易洗牌算法 (Fisher-Yates)，生成一个唯一的随机母体顺序
+const shuffle = (array) => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
+const master_list = shuffle(photo_list); // 长度为 23 的随机母表
+
+// 3. 数组循环位移函数 (Rotation)
+const rotateArray = (arr, offset) => {
+  const k = offset % arr.length;
+  return [...arr.slice(k), ...arr.slice(0, k)];
+};
+
+/* 
+  4. 使用大跨度错位偏移（分别偏移 0, 8, 16 位）
+  因为 23 是质数，偏移量 8 和 16 可以做到：
+  - 垂直方向上绝对不会出现重复图片（同一列里的三张图完全不同）
+  - 同一张图片在相邻行之间的距离被拉到最大，避免在同一个手机屏幕内挤在一起
+*/
+const base_1 = master_list;
+const base_2 = rotateArray(master_list, 8);
+const base_3 = rotateArray(master_list, 16);
+
+// 5. 每行依然复制 4 份（长度均为 92，物理对齐完全不受影响）
+const display_list_1 = [...base_1, ...base_1, ...base_1, ...base_1];
+const display_list_2 = [...base_2, ...base_2, ...base_2, ...base_2];
+const display_list_3 = [...base_3, ...base_3, ...base_3, ...base_3];
 </script>
 
 <template>
     <div class="bg">
         <div class="container">
-            <!-- 
-                v-memo: Vue 3.2+ 新特性。
-                告诉 Vue："只要 display_list 没变，就不要重新计算这个 DOM 树"。
-                这对于这种大量静态列表非常有用，能极大减少内存开销。
-            -->
-            <div class="scroll-container" v-memo="[display_list]">
+            <div class="scroll-container" v-memo="[display_list_1]">
                 <ol class="boxes boxes-forward">
-                    <li class="box" v-for="(photo, i) in display_list" :key="'r1-'+i">
-                        <!-- 
-                            decoding="async": 关键优化。允许浏览器在后台解码图片，
-                            特别是你有 GIF 的时候，能防止滚动卡顿。
-                        -->
+                    <li class="box" v-for="(photo, i) in display_list_1" :key="'r1-'+i">
                         <img :src="photo" loading="lazy" decoding="async" alt="gallery" />
                     </li>
                 </ol>
             </div>
 
-            <div class="scroll-container" v-memo="[display_list]">
+            <div class="scroll-container" v-memo="[display_list_2]">
                 <ol class="boxes boxes-backward">
-                    <li class="box" v-for="(photo, i) in display_list" :key="'r2-'+i">
+                    <li class="box" v-for="(photo, i) in display_list_2" :key="'r2-'+i">
                         <img :src="photo" loading="lazy" decoding="async" alt="gallery" />
                     </li>
                 </ol>
             </div>
 
-            <div class="scroll-container" v-memo="[display_list]">
+            <div class="scroll-container" v-memo="[display_list_3]">
                 <ol class="boxes boxes-forward">
-                    <li class="box" v-for="(photo, i) in display_list" :key="'r3-'+i">
+                    <li class="box" v-for="(photo, i) in display_list_3" :key="'r3-'+i">
                         <img :src="photo" loading="lazy" decoding="async" alt="gallery" />
                     </li>
                 </ol>
@@ -61,7 +81,6 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     width: 100%; 
     height: 100%; 
     z-index: 0; 
-    /* 背景渐变动画稍微调慢一点，降低 GPU 负载 */
     background: linear-gradient(-45deg, #ff7d996e, #ffc766, #5cb6ff, #ff6363); 
     background-size: 200% 200%; 
     animation: gradient 20s ease infinite; 
@@ -89,7 +108,6 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     height: 30vh; 
     display: flex;
     align-items: center; 
-    /* 防止子元素溢出导致的布局抖动 */
     overflow: hidden; 
 }
 
@@ -97,12 +115,9 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     position: absolute; 
     display: flex; 
     height: 100%; 
-    /* === [核心优化] GPU 加速 === */
-    /* 告诉浏览器这个元素的位置会一直变，请把它提升到合成层 */
     will-change: transform;
-    
     animation: scroll linear infinite; 
-    animation-duration: 60s; /* 稍微调慢一点，看起来更优雅，也更省资源 */
+    animation-duration: 60s; 
     gap: 3vh; 
     padding-left: 0; 
     margin-top: 0; 
@@ -112,7 +127,6 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
 .boxes-forward { animation-name: scrollForward; }
 .boxes-backward { animation-name: scrollBackward; }
 
-/* 使用 translate3d 强制开启硬件加速 */
 @keyframes scrollForward { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-50%, 0, 0); } }
 @keyframes scrollBackward { 0% { transform: translate3d(-50%, 0, 0); } 100% { transform: translate3d(0, 0, 0); } }
 
@@ -126,20 +140,12 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     border: none; 
     border-radius: 15px; 
     transition: all 0.5s ease; 
-    
-    /* 阴影优化：大量的阴影模糊计算很耗性能，稍微减少扩散半径 */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); 
-    
     opacity: 0.8; 
-    /* 3D 变换也需要 will-change */
     will-change: transform, width;
     transform: perspective(100px) rotateY(-15deg); 
 }
 
-/* 
-   图片本身不要做太复杂的动画，跟随父盒子即可。
-   添加 backface-visibility 避免旋转时的闪烁 
-*/
 .box img { 
     width: 100%; 
     height: 100%; 
@@ -149,18 +155,16 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     backface-visibility: hidden; 
 }
 
-/* 悬停效果 */
 .box:hover { 
     opacity: 1; 
     z-index: 100; 
     width: 35vh; 
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5); /* 只有悬停时才用重阴影 */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
     transform: scale(1.1) rotateY(0deg); 
 }
 
 .boxes:hover { animation-play-state: paused; }
 
-/* 反向行的默认角度 */
 .boxes-backward .box { transform: perspective(100px) rotateY(15deg); }
 .boxes-backward .box:hover { transform: scale(1.1) rotateY(0deg); width: 35vh; }
 
@@ -170,11 +174,6 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     .scroll-container { height: 200px; }
     .boxes { gap: 15px; }
     .box { width: 150px; height: 150px; }
-    
-    /* 
-       【关键修复】：同时作用于正向行和反向行的 hover 状态。
-       重写宽度以覆盖桌面端的 .boxes-backward .box:hover 样式。
-    */
     .box:hover,
     .boxes-backward .box:hover { 
         width: 220px; 
@@ -186,11 +185,6 @@ const display_list = [...photo_list, ...photo_list, ...photo_list, ...photo_list
     .scroll-container { height: 150px; }
     .boxes { gap: 10px; }
     .box { width: 120px; height: 120px; }
-    
-    /* 
-       【关键修复】：同时作用于正向行和反向行的 hover 状态。
-       重写宽度以覆盖桌面端的 .boxes-backward .box:hover 样式。
-    */
     .box:hover,
     .boxes-backward .box:hover { 
         width: 200px; 
