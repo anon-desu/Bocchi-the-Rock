@@ -233,22 +233,21 @@ const closeCaptcha = () => {
 
 <template>
     <div class="main" ref="mainRef">
-        <!-- 人机验证 Modernized Overlay -->
+        <!-- 人机验证 Overlay -->
         <Transition name="captcha-fade">
             <div v-if="showCaptcha" class="captcha-overlay" @click.self="closeCaptcha">
                 <div class="captcha-modal">
-                    <!-- 现代化微交互关闭按钮 -->
-                    <button class="captcha-close" @click="closeCaptcha" aria-label="关闭验证">
-                        <Icon icon="material-symbols:close-rounded" />
-                    </button>
-                    <!-- 精致的安全验证框架 -->
+                    <!-- 安全验证框架 -->
                     <div class="iframe-container">
                         <div class="captcha-header">
                             <div class="captcha-header-left">
                                 <Icon icon="material-symbols:shield-lock-outline-rounded" class="header-icon" />
                                 <span class="header-title">安全验证</span>
                             </div>
-                            <span class="captcha-header-badge">智能防护</span>
+                            <!-- 移入顶栏右侧的关闭按钮，改用 div 彻底避免样式冲突 -->
+                            <div class="captcha-close" @click="closeCaptcha" role="button" aria-label="关闭验证">
+                                <Icon icon="material-symbols:close-rounded" />
+                            </div>
                         </div>
                         <iframe :src="CAPTCHA_UI_DOMAIN" title="安全验证" scrolling="no"></iframe>
                     </div>
@@ -360,7 +359,7 @@ const closeCaptcha = () => {
     position: relative; 
     width: 380px; 
     max-width: 90vw; 
-    height: 560px; /* 适当增加高度以包容精致的顶部状态栏 */
+    height: 540px; /* 调整高度以适配顶栏 */
     max-height: 85vh; 
     display: flex; 
     flex-direction: column; 
@@ -390,7 +389,7 @@ const closeCaptcha = () => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 14px 16px;
     background: #ffffff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     user-select: none;
@@ -414,15 +413,6 @@ const closeCaptcha = () => {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.captcha-header-badge {
-    font-size: 11px;
-    background: rgba(236, 64, 122, 0.08);
-    color: #ec407a;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-weight: 500;
-}
-
 .captcha-modal iframe { 
     flex: 1;
     width: 100%; 
@@ -430,39 +420,32 @@ const closeCaptcha = () => {
     display: block; 
 }
 
-/* 现代化悬浮关闭按钮 */
+/* 现代化内嵌式关闭按钮 (已改为 div，完全规避全局 button 样式继承) */
 .captcha-close { 
-    position: absolute; 
-    top: -12px; 
-    right: -12px; 
-    width: 36px; 
-    height: 36px; 
-    background: rgba(255, 255, 255, 0.9); 
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    width: 32px; 
+    height: 32px; 
+    background: rgba(0, 0, 0, 0.05); 
     color: #64748b; 
-    border: 1px solid rgba(0, 0, 0, 0.06); 
     border-radius: 50%; 
     cursor: pointer; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
     display: flex; 
     align-items: center; 
     justify-content: center; 
-    margin: 0; 
-    z-index: 99;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* 仅在悬停或激活时产生颜色渐变，无任何缩放/旋转 */
 .captcha-close:hover {
-    background: #ffffff;
+    background: rgba(0, 0, 0, 0.1);
     color: #ec407a;
-    transform: scale(1.08) rotate(90deg); /* 悬停微旋转放大 */
-    box-shadow: 0 6px 16px rgba(236, 64, 122, 0.15);
 }
 
-.captcha-close :deep(svg) {
-    width: 20px;
-    height: 20px;
+/* 保证图标尺寸精准不拉伸 */
+.captcha-close :deep(svg),
+.captcha-close svg {
+    width: 18px !important;
+    height: 18px !important;
 }
 
 /* 优雅的弹性进出转场动效 */
@@ -497,12 +480,6 @@ const closeCaptcha = () => {
 @media (max-width: 480px) { 
     .captcha-modal { 
         height: 500px; /* 移动端高度微调 */
-    } 
-    .captcha-close { 
-        top: -8px; 
-        right: -8px; 
-        width: 32px; 
-        height: 32px;
     } 
 }
 
