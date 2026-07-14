@@ -233,11 +233,23 @@ const closeCaptcha = () => {
 
 <template>
     <div class="main" ref="mainRef">
-        <Transition name="fade">
+        <!-- 人机验证 Modernized Overlay -->
+        <Transition name="captcha-fade">
             <div v-if="showCaptcha" class="captcha-overlay" @click.self="closeCaptcha">
                 <div class="captcha-modal">
-                    <button class="captcha-close" @click="closeCaptcha">×</button>
+                    <!-- 现代化微交互关闭按钮 -->
+                    <button class="captcha-close" @click="closeCaptcha" aria-label="关闭验证">
+                        <Icon icon="material-symbols:close-rounded" />
+                    </button>
+                    <!-- 精致的安全验证框架 -->
                     <div class="iframe-container">
+                        <div class="captcha-header">
+                            <div class="captcha-header-left">
+                                <Icon icon="material-symbols:shield-lock-outline-rounded" class="header-icon" />
+                                <span class="header-title">安全验证</span>
+                            </div>
+                            <span class="captcha-header-badge">智能防护</span>
+                        </div>
                         <iframe :src="CAPTCHA_UI_DOMAIN" title="安全验证" scrolling="no"></iframe>
                     </div>
                 </div>
@@ -323,56 +335,180 @@ const closeCaptcha = () => {
 </template>
 
 <style scoped>
+/* ==========================================================================
+   人机验证 Modernized Style 
+   ========================================================================== */
 .captcha-overlay { 
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
-    background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); 
-    z-index: 9999; display: flex; justify-content: center; align-items: center; 
-    padding: 20px; box-sizing: border-box; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh; 
+    background: rgba(15, 23, 42, 0.35); /* 优雅深色微透背景 */
+    backdrop-filter: blur(8px); /* 强化磨砂模糊 */
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    padding: 20px; 
+    box-sizing: border-box; 
 }
 
 .captcha-modal { 
     background: transparent;
     position: relative; 
-    width: 380px; max-width: 90vw; 
-    height: 520px; max-height: 85vh; 
-    display: flex; flex-direction: column; 
+    width: 380px; 
+    max-width: 90vw; 
+    height: 560px; /* 适当增加高度以包容精致的顶部状态栏 */
+    max-height: 85vh; 
+    display: flex; 
+    flex-direction: column; 
     overflow: visible !important; 
-    box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
-    border-radius: 12px;
+    /* 多层拟物阴影，带来精致立体感 */
+    box-shadow: 
+        0 20px 50px -12px rgba(0, 0, 0, 0.25),
+        0 10px 20px -15px rgba(236, 64, 122, 0.15); 
+    border-radius: 16px; /* 更为圆润 */
 }
 
 .iframe-container {
-    width: 100%; height: 100%;
-    background: white;
-    border-radius: 12px;
+    width: 100%; 
+    height: 100%;
+    background: #ffffff;
+    border-radius: 16px;
     overflow: hidden; 
     position: relative;
     z-index: 1; 
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 精致页眉 */
+.captcha-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    user-select: none;
+}
+
+.captcha-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.captcha-header .header-icon {
+    font-size: 20px;
+    color: #ec407a; /* 沿用页面主题粉色 */
+}
+
+.captcha-header .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b; /* 现代Slate深灰色 */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.captcha-header-badge {
+    font-size: 11px;
+    background: rgba(236, 64, 122, 0.08);
+    color: #ec407a;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
 }
 
 .captcha-modal iframe { 
-    width: 100%; height: 100%; border: none; display: block; 
+    flex: 1;
+    width: 100%; 
+    border: none; 
+    display: block; 
 }
 
+/* 现代化悬浮关闭按钮 */
 .captcha-close { 
     position: absolute; 
-    top: -15px; right: -15px; 
-    width: 32px; height: 32px; 
-    background: white; color: #333; 
-    border: none; border-radius: 50%; 
-    font-size: 20px; cursor: pointer; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2); 
-    display: flex; align-items: center; justify-content: center; 
+    top: -12px; 
+    right: -12px; 
+    width: 36px; 
+    height: 36px; 
+    background: rgba(255, 255, 255, 0.9); 
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #64748b; 
+    border: 1px solid rgba(0, 0, 0, 0.06); 
+    border-radius: 50%; 
+    cursor: pointer; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
     margin: 0; 
     z-index: 99;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.captcha-close:hover {
+    background: #ffffff;
+    color: #ec407a;
+    transform: scale(1.08) rotate(90deg); /* 悬停微旋转放大 */
+    box-shadow: 0 6px 16px rgba(236, 64, 122, 0.15);
+}
+
+.captcha-close :deep(svg) {
+    width: 20px;
+    height: 20px;
+}
+
+/* 优雅的弹性进出转场动效 */
+.captcha-fade-enter-active, 
+.captcha-fade-leave-active {
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.captcha-fade-enter-from, 
+.captcha-fade-leave-to {
+    opacity: 0;
+}
+
+.captcha-fade-enter-active .captcha-modal {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+.captcha-fade-leave-active .captcha-modal {
+    transition: transform 0.25s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s ease;
+}
+
+.captcha-fade-enter-from .captcha-modal {
+    transform: scale(0.9) translateY(15px);
+    opacity: 0;
+}
+
+.captcha-fade-leave-to .captcha-modal {
+    transform: scale(0.95) translateY(5px);
+    opacity: 0;
 }
 
 @media (max-width: 480px) { 
-    .captcha-modal { margin-top: 0; } 
-    .captcha-close { top: -10px; right: -10px; } 
+    .captcha-modal { 
+        height: 500px; /* 移动端高度微调 */
+    } 
+    .captcha-close { 
+        top: -8px; 
+        right: -8px; 
+        width: 32px; 
+        height: 32px;
+    } 
 }
 
-/* --- 核心修复：保留这个 overflow: hidden --- */
+/* ==========================================================================
+   原有布局与基础页面样式 
+   ========================================================================== */
 .main { 
     display: flex; align-items: center; justify-content: center; 
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
@@ -435,7 +571,6 @@ button.verified-btn:hover {
 .input-name { font-family: 'Note-Script-SemiBold-2'; width: 60%; text-align: left; font-size: 20px; }
 .repassword-container { height: 70px; width: 100%; display: flex; justify-content: center; flex-direction: column; align-items: center; }
 .repassword-content { width: 100%; display: flex; flex-direction: column; align-items: center; }
-
 .switch-prompt { font-size: 14px; color: #888; margin-top: 15px; cursor: pointer; text-align: center; }
 .switch-prompt .link { color: #ec407a; text-decoration: underline; font-weight: bold; }
 .switch-login { position: absolute; top: 5%; right: 25px; width: 60px; height: auto; z-index: 2; cursor: pointer; transform: scale(1); transition: transform 0.5s ease; }
