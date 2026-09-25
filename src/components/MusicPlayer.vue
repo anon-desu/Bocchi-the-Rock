@@ -38,11 +38,23 @@ const playlists = {
     { index: 2, name: 'Cagayake!GIRLS', duration: '04:10', image: '/assets/albums/Cagayake!GIRLS - 放課後ティータイム.jpg', src: '/assets/musics/Cagayake!GIRLS - 放課後ティータイム.mp3', singer: '放課後ティータイム', bvid: 'BV1V54y167fr' },
     { index: 3, name: '天使にふれたよ！', duration: '04:41', image: '/assets/albums/天使にふれたよ! - 放課後ティータイム.jpg', src: '/assets/musics/天使にふれたよ! - 放課後ティータイム.mp3', singer: '放課後ティータイム', bvid: 'BV1prnQebEwm' },
     { index: 4, name: '春日影 - MyGO!!!!!', duration: '04:16', image: '/assets/albums/春日影 - MyGO!!!!!.png', src: '/assets/musics/春日影 - MyGO!!!!!.mp3', singer: 'MyGO!!!!!', bvid: 'BV1JHLUz4EUy' },
-    ]
+  ]
 };
 
+// UI 列表展示对应的歌单
 const activePlaylistName = ref('結束バンド');
 const currentTracklist = computed(() => playlists[activePlaylistName.value]);
+
+// 实际正在播放的歌曲所属歌单（避免浏览其他歌单时影响切歌队列）
+const playingTracklist = computed(() => {
+  for (const name in playlists) {
+    if (playlists[name].some(m => m.name === activeItem.value?.name)) {
+      return playlists[name];
+    }
+  }
+  return playlists[activePlaylistName.value];
+});
+
 const playerIcons = ["/assets/images/icon_play.png","/assets/images/icon_pause.png"];
 const playStatu = ref(0);
 const activeItem = ref(playlists.結束バンド[0]);
@@ -55,11 +67,12 @@ const isMvVisible = ref(false);
 player.value.preload = "metadata";
 player.value.volume = volumeProgress.value / 100;
 
-// === [新增优化逻辑] 预测性预加载下一首 ===
+// 预测性预加载下一首：改用实际播放歌单
 const prefetchNextTrack = () => {
     if (hasPrefetchedNext.value) return;
-    const tracklist = currentTracklist.value;
+    const tracklist = playingTracklist.value;
     const currentIndex = tracklist.findIndex(m => m.name === activeItem.value.name);
+    if (currentIndex === -1) return;
     let nextIndex = (currentIndex + 1) >= tracklist.length ? 0 : currentIndex + 1;
     const nextSong = tracklist[nextIndex];
     const link = document.createElement('link');
@@ -69,11 +82,10 @@ const prefetchNextTrack = () => {
     hasPrefetchedNext.value = true;
 };
 
+// 切换歌单 UI：仅改变列表展示，不打断当前播放
 const switchPlaylist = (playlistName) => { 
   if (activePlaylistName.value === playlistName) return; 
-  playStatu.value = 0; 
   activePlaylistName.value = playlistName; 
-  activeItem.value = playlists[playlistName][0];
 };
 
 const fetchUserDataAndLikes = async () => {
@@ -97,7 +109,6 @@ const updateProgress = () => {
     if (player.value && player.value.duration && isFinite(player.value.duration)) { 
         const progress = player.value.currentTime / player.value.duration;
         musicProgress.value = progress * 100; 
-        // === [新增优化逻辑] 当播放超过 85% 时，静默预加载下一首 ===
         if (progress > 0.85) prefetchNextTrack();
         updatePositionState(); 
     } 
@@ -118,12 +129,24 @@ const switchStatu = () => {
   } 
 };
 
-const switchMusic = (direction) => { if (!activeItem.value) return; const tracklist = currentTracklist.value; const currentIndex = tracklist.findIndex(music => music.name === activeItem.value.name); if (currentIndex === -1) { activeItem.value = tracklist[0]; return; } let nextIndex = (direction === 'next') ? currentIndex + 1 : currentIndex - 1; if (nextIndex >= tracklist.length) { nextIndex = 0; } if (nextIndex < 0) { nextIndex = tracklist.length - 1; } activeItem.value = tracklist[nextIndex]; };
+// 切歌：基于当前实际播放歌单进行上一首/下一首计算
+const switchMusic = (direction) => { 
+  if (!activeItem.value) return; 
+  const tracklist = playingTracklist.value; 
+  const currentIndex = tracklist.findIndex(music => music.name === activeItem.value.name); 
+  if (currentIndex === -1) { 
+    activeItem.value = tracklist[0]; 
+    return; 
+  } 
+  let nextIndex = (direction === 'next') ? currentIndex + 1 : currentIndex - 1; 
+  if (nextIndex >= tracklist.length) { nextIndex = 0; } 
+  if (nextIndex < 0) { nextIndex = tracklist.length - 1; } 
+  activeItem.value = tracklist[nextIndex]; 
+};
 
 watch(activeItem, (newItem) => { 
     player.value.pause(); 
     musicProgress.value = 0; 
-    // === [新增优化逻辑] 切歌时清理旧的预加载标签 ===
     hasPrefetchedNext.value = false;
     document.querySelectorAll('.music-prefetch-tag').forEach(el => el.remove());
     
@@ -158,9 +181,10 @@ const toggleLike = async () => {
     } catch (error) { likedSongs.value = previousState; } 
 };
 
+// 随机播放：基于当前实际播放歌单
 const playWeightedRandom = () => { 
     const weightedPool = []; 
-    currentTracklist.value.forEach(song => { 
+    playingTracklist.value.forEach(song => { 
         if (song.name === activeItem.value.name) return; 
         const weight = likedSongs.value.has(song.name) ? 5 : 1; 
         for (let i = 0; i < weight; i++) { weightedPool.push(song); } 
