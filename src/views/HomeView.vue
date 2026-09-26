@@ -5,7 +5,7 @@ export default {
 </script>
 
 <script setup>
-import { onMounted, ref, defineAsyncComponent } from 'vue';
+import { onMounted, onActivated, onDeactivated, ref, defineAsyncComponent } from 'vue';
 import Header from '@/components/Header.vue';
 
 // === 保持性能优化：异步引入非首屏组件 ===
@@ -16,6 +16,7 @@ const About = defineAsyncComponent(() => import('@/components/About.vue'));
 
 const scrollContainer = ref(null);
 const activeSection = ref('section1');
+const bgVideoRef = ref(null); // 新增：主页背景视频引用
 
 // 导航点击处理
 const handleNavClick = (to) => {
@@ -29,12 +30,22 @@ const handleNavClick = (to) => {
   }
 };
 
+// 新增：尝试播放背景视频，忽略被浏览器策略拒绝的 Promise 报错
+const tryPlayVideo = () => {
+  const video = bgVideoRef.value;
+  if (video && video.paused) {
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        // 浏览器暂时拒绝播放（如自动播放策略），静默忽略即可
+      });
+    }
+  }
+};
+
 onMounted(() => {
-  // === [修复] 恢复你原本的 IntersectionObserver 逻辑 ===
   const options = {
-    // 之前这里写错了变量名，现已修正为 scrollContainer.value
     root: scrollContainer.value, 
-    // 保持你原本的逻辑：当板块进入视口中间区域时触发
     rootMargin: "-40% 0px -60% 0px", 
     threshold: 0
   };
@@ -50,6 +61,22 @@ onMounted(() => {
   document.querySelectorAll('.scroll-page').forEach(section => {
     observer.observe(section);
   });
+
+  // 首次挂载保险：确保视频处于播放状态
+  tryPlayVideo();
+});
+
+// 新增：从登录页返回时（keep-alive 重新激活），主动恢复播放
+onActivated(() => {
+  tryPlayVideo();
+});
+
+// 新增：切到登录页时可选择暂停，节省资源
+onDeactivated(() => {
+  const video = bgVideoRef.value;
+  if (video && !video.paused) {
+    video.pause();
+  }
 });
 </script>
 
@@ -64,6 +91,7 @@ onMounted(() => {
       <div class="video-background-container">
         <!-- 保持性能优化：海报图优先 -->
         <video 
+          ref="bgVideoRef"
           autoplay 
           loop 
           muted 
@@ -109,7 +137,6 @@ onMounted(() => {
   left: 0;
   background-color: #141414;
   
-  /* === [修复] 修正了这里的拼写错误 (删除了多余的 yb) === */
   scroll-snap-type: y mandatory;
   
   /* 隐藏滚动条 */
