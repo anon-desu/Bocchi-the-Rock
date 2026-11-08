@@ -38,8 +38,8 @@ const handleMessage = (event) => {
     }
 
     const allowedDomains = [
-        'https://bangcaptcha.19216891.xyz',
-        'https://band.19216891.xyz',
+        'https://bangcaptcha.53113007.xyz',
+        'https://band.53113007.xyz',
         'http://localhost:5173', 
         'http://localhost:3000'
     ];
