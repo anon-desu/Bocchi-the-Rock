@@ -5,7 +5,7 @@ import { Icon } from '@iconify/vue'
 import { userStore } from '../store/user';
 import { API_BASE_URL } from '../utils/api';
 
-const CAPTCHA_UI_DOMAIN = 'https://bangcaptcha.19216891.xyz'; 
+const CAPTCHA_UI_DOMAIN = 'https://bangcaptcha.53113007.xyz'; 
 
 const isLoading = ref(false);
 const showCaptcha = ref(false);
